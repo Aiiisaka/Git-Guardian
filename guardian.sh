@@ -21,7 +21,7 @@ format_message() {
 check_files() {
     files_modified=$(git diff --name-only | wc -l)
     lines_modified=$(git diff | grep "^+" | wc -l)
-    untracked_files=$(git status --porcelain | grep "^??" | wc -l)
+    untracked_files=$(git ls-files -o | wc -l)
     files_modified_or_untracked=$(($files_modified + $untracked_files))
 
     format_message $files_modified_or_untracked "Fichier modifié ou non suivi" "Fichiers modifiés ou non suivis"
@@ -29,6 +29,7 @@ check_files() {
 
     if [ "$files_modified_or_untracked" -ge $MAX_FILES_MODIFIED_OR_UNTRACKED ] || [ "$lines_modified" -ge $MAX_LINES_MODIFIED ]; then
         echo -e "\e[31mAttention : Il est temps de versionner vos modifications !\e[0m"
+        echo -e "\e[31mVoici une aide pour vous guider :\e[0m"
         git status -s
         return 1
     else
@@ -47,12 +48,12 @@ fi
 while true; do
     check_files
     if [ $? -eq 1 ]; then
-        echo -e "\e[33mVous avez 30 secondes pour commencer le versionnement...\e[0m"
+        echo -e "\e[33m\e[5m⚠️ URGENT : Versionnez maintenant ! Vous avez 30 secondes... ⚠️\e[0m"
         for i in {30..1}; do
-            echo -ne "\r\e[5m\e[33mTemps restant : $i secondes\e[0m\e[25m"
+            echo -ne "\r\e[5m\e[41m\e[97mTemps restant : $i secondes\e[0m\e[25m"
             sleep 1
         done
-        echo ""
+        echo -e "\e[0m"
 
         check_files
         if [ $? -eq 1 ]; then
