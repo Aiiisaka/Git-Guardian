@@ -48,7 +48,7 @@ fi
 while true; do
     check_files
     if [ $? -eq 1 ]; then
-        echo -e "\e[33m\e[5m⚠️ URGENT : Versionnez maintenant ! Vous avez 30 secondes... ⚠️\e[0m"
+        echo -e "\e[33m\e[5m⚠️  URGENT : Versionnez maintenant ! Vous avez 30 secondes... ⚠️\e[0m"
         for i in {30..1}; do
             echo -ne "\r\e[5m\e[41m\e[97mTemps restant : $i secondes\e[0m\e[25m"
             sleep 1
