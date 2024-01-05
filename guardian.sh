@@ -7,8 +7,17 @@ check_files() {
     untracked_files=$(git status --porcelain | grep "^??" | wc -l)
     files_modified_or_untracked=$(($files_modified + $untracked_files))
 
+    # Affichage des informations > Quels fichiers sont modifiés ? Combien de lignes ont été modifiées ? Lesquels ?
     echo -e "\e[34mFichiers modifiés ou non suivis : $files_modified_or_untracked\e[0m"
     echo -e "\e[34mLignes modifiées : $lines_modified\e[0m"
+
+    # Listing des fichiers modifiés
+    echo -e "\e[34mFichiers modifiés :\e[0m"
+    git diff --name-only
+    echo -e "\e[34mFichiers non suivis :\e[0m"
+    git status --porcelain | grep "^??"
+    echo -e "\e[34mLignes modifiées :\e[0m"
+    git diff | grep "^+"
 
     if [ "$files_modified_or_untracked" -ge $MAX_FILES_MODIFIED_OR_UNTRACKED ] || [ "$lines_modified" -ge $MAX_LINES_MODIFIED ]; then
         echo -e "\e[31mAttention : Il est temps de versionner vos modifications !\e[0m"
@@ -47,5 +56,5 @@ while true; do
             git clean -f
         fi
     fi
-    sleep 300 # Pause de 5 minutes
+    sleep 30 # Pause de 5 minutes
 done
