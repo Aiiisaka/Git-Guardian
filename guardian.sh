@@ -1,5 +1,22 @@
 #!/bin/bash
 
+# Variables d'environnement pour les seuils
+MAX_FILES_MODIFIED_OR_UNTRACKED=10
+MAX_LINES_MODIFIED=100
+
+# Fonction pour formater le message en fonction du nombre
+format_message() {
+    local count=$1
+    local singular=$2
+    local plural=$3
+
+    if [ "$count" -eq 1 ]; then
+        echo -e "\e[34m$count $singular\e[0m"
+    else
+        echo -e "\e[34m$count $plural\e[0m"
+    fi
+}
+
 # Fonction pour vérifier le statut des fichiers
 check_files() {
     files_modified=$(git diff --name-only | wc -l)
@@ -7,20 +24,12 @@ check_files() {
     untracked_files=$(git status --porcelain | grep "^??" | wc -l)
     files_modified_or_untracked=$(($files_modified + $untracked_files))
 
-    # Affichage des informations > Quels fichiers sont modifiés ? Combien de lignes ont été modifiées ? Lesquels ?
-    echo -e "\e[34mFichiers modifiés ou non suivis : $files_modified_or_untracked\e[0m"
-    echo -e "\e[34mLignes modifiées : $lines_modified\e[0m"
-
-    # Listing des fichiers modifiés
-    echo -e "\e[34mFichiers modifiés :\e[0m"
-    git diff --name-only
-    echo -e "\e[34mFichiers non suivis :\e[0m"
-    git status --porcelain | grep "^??"
-    echo -e "\e[34mLignes modifiées :\e[0m"
-    git diff | grep "^+"
+    format_message $files_modified_or_untracked "Fichier modifié ou non suivi" "Fichiers modifiés ou non suivis"
+    format_message $lines_modified "Ligne modifiée" "Lignes modifiées"
 
     if [ "$files_modified_or_untracked" -ge $MAX_FILES_MODIFIED_OR_UNTRACKED ] || [ "$lines_modified" -ge $MAX_LINES_MODIFIED ]; then
         echo -e "\e[31mAttention : Il est temps de versionner vos modifications !\e[0m"
+        git status -s
         return 1
     else
         echo -e "\e[32mTrès bien, continuez votre travail.\e[0m"
@@ -28,10 +37,6 @@ check_files() {
 
     return 0
 }
-
-# Variables d'environnement pour les seuils
-MAX_FILES_MODIFIED_OR_UNTRACKED=10 # Nombre max de fichiers modifiés ou non suivis
-MAX_LINES_MODIFIED=100 # Nombre max de lignes modifiées
 
 # Vérification de l'installation de Git
 if ! command -v git &> /dev/null; then
@@ -44,7 +49,7 @@ while true; do
     if [ $? -eq 1 ]; then
         echo -e "\e[33mVous avez 30 secondes pour commencer le versionnement...\e[0m"
         for i in {30..1}; do
-            echo -ne "\r\e[33mTemps restant : $i secondes\e[0m"
+            echo -ne "\r\e[5m\e[33mTemps restant : $i secondes\e[0m\e[25m"
             sleep 1
         done
         echo ""
@@ -56,5 +61,5 @@ while true; do
             git clean -f
         fi
     fi
-    sleep 30 # Pause de 5 minutes
+    sleep 30 # Vérification toutes les 30 secondes
 done
