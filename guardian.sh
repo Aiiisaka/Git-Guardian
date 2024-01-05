@@ -58,7 +58,7 @@ while true; do
         if [ $? -eq 1 ]; then
             echo -e "\e[31mTrop tard ! Réinitialisation des modifications...\e[0m"
             git reset --hard
-            git clean -f
+            git clean -fd
         fi
     fi
     sleep 30 # Vérification toutes les 30 secondes
